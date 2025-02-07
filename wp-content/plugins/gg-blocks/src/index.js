@@ -1,6 +1,25 @@
 import "./index.scss";
 import { BaseControl, TextControl, Flex, FlexBlock, FlexItem, Button, Icon } from "@wordpress/components";
 
+(function() {
+    let locked = false; // Move to global scope
+    wp.data.subscribe(function() {
+        const results = wp.data
+            .select("core/block-editor")
+            .getBlocks()
+            .filter(block => block.name === "gg-blocks/multiple-choice" && block.attributes.correctAnswer === undefined);
+
+        if (results.length && locked === false) {
+            locked = true;
+            wp.data.dispatch("core/editor").lockPostSaving("noanswer");
+        }
+        if (!results.length && locked) {
+            locked = false;
+            wp.data.dispatch("core/editor").unlockPostSaving("noanswer");
+        }
+    });
+})();
+
 const EditTestBlock = props => {
     return (
         <div>
